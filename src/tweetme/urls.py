@@ -11,7 +11,7 @@ Class-based views
     2. Add a URL to urlpatterns:  url(r'^$', Home.as_view(), name='home')
 Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
-    2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
+    2. Add a URL to urlpatterns:  url(r'^blog/', include('bl og.urls'))
 """
 from django.conf.urls import url, include
 from django.contrib import admin
@@ -25,6 +25,7 @@ from .views import home
 urlpatterns = [
     url(r'^admin/', admin.site.urls), #admin/
     url(r'^$', TweetListView.as_view(), name='home'), #/
+    url(r'^profiles/', include('profiles.urls',namespace='profiles')), #/
     url(r'^tweet/', include('tweets.urls', namespace='tweet')),
     url(r'^api/tweet/', include('tweets.api.urls', namespace='tweet-api')),
 ]
