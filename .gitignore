@@ -5,7 +5,7 @@ lib/
 pip-selfcheck.json
 *.py[cod]
 *.DS_Store
-
+tweetdemo
 
 
 # Byte-compiled / optimized / DLL files
