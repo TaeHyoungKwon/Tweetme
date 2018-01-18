@@ -1,5 +1,8 @@
 from django.conf import settings
 from django.db import models
+from django.db.models.signals import post_save
+from django.core.urlresolvers import reverse_lazy
+
 
 class UserProfileManager(models.Manager):
     user_for_related_fields = True
@@ -21,7 +24,17 @@ class UserProfileManager(models.Manager):
         else:
             user_profile.follwoing.add(to_toggle_user)
             added = True
-        return 
+        return added
+
+
+    def is_following(self, user, followed_by_user):
+        user_profile, created = UserProfile.objects.get_or_create(user=user)
+        if created:
+            return False
+        if followed_by_user in user_profile.following.all():
+            return True
+        return False
+
 
 
 class UserProfile(models.Model):
@@ -35,3 +48,16 @@ class UserProfile(models.Model):
         users = self.following.all()
         return users.exclude(username=self.user.username)
 
+    def get_follow_url(self):
+        return reverse_lazy("profiles:follow", kwargs={'username':self.user.username})
+
+
+    def get_absolute_url(self):
+        return reverse_lazy("profiles:detail", kwargs={'username':self.user.username})
+
+
+def post_save_user_receiver(sender, instance, created, *args, **kwargs):
+    if created:
+        new_profile = UserProfile.objects.get_or_create(user=instance)#??
+
+post_save.connect(post_save_user_receiver, sender=settings.AUTH_USER_MODEL)
