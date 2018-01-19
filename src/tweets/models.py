@@ -14,6 +14,10 @@ class TweetManager(models.Manager):
         else:
             original_parent = parent_obj
 
+        qs = self.objects.filter(user=user, parent=parent_obj)
+        if qs.exists():
+            return None
+
         obj = self.model(
             parent = original_parent,
             user = user,
