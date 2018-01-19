@@ -2,11 +2,13 @@
 
 <style>
 #tweet-container {
+
 }
 </style>
 
 {% block script %}
 <script>
+
 function getParameterByName(name, url) {
     if (!url) {
       url = window.location.href;
@@ -18,10 +20,34 @@ function getParameterByName(name, url) {
     if (!results[2]) return '';
     return decodeURIComponent(results[2].replace(/\+/g, " "));
 }
+
+
+
+
 $(document).ready(function(){
   var query = getParameterByName('q')
   var tweetList = [];
   var nextTweetUrl;
+
+  $(document.body).on("click", ".retweetBtn", function(e){
+    e.preventDefault()
+    console.log("clicked")
+    var url = "/api" + $(this).attr("href")
+
+    $.ajax({
+      method: "GET",
+      url: url,
+      success: function (data) {
+        console.log(data)
+        attachTweet(data, true, true)
+        updateHashLinks()
+      },
+      error: function(data){
+        console.log("error")
+        console.log(data)
+      }
+    })
+  })
   function updateHashLinks(){
     $(".media-body").each(function(data){
         var hashtagRegex = /(^|\s)#([\w\d-]+)/g
@@ -30,6 +56,7 @@ $(document).ready(function(){
         
     })
   }
+
   function attachTweet(tweetValue, prepend, retweet){
       var dateDisplay = tweetValue.date_display;
       var tweetContent = tweetValue.content;
@@ -38,10 +65,10 @@ $(document).ready(function(){
       if (retweet && tweetValue.parent){
          // retweet
         var mainTweet = tweetValue.parent
-         tweetFormattedHtml = "<div class=\"media\"><div class=\"media-body\"><span class='grey-color'>Retweet via " + tweetUser.username +" on " + dateDisplay + "</span><br/>"+ mainTweet.content + "<br/> via <a href='" + mainTweet.user.url + "'>" + mainTweet.user.username + "</a> | " + mainTweet.date_display + " | " + "<a href='/tweet/" + mainTweet.id + "'>View</a> | " + "<a href='/tweet/" + tweetValue.id + "/retweet/'>Retweet</a>" + "</div></div><hr/>"
+         tweetFormattedHtml = "<div class=\"media\"><div class=\"media-body\"><span class='grey-color'>Retweet via " + tweetUser.username +" on " + dateDisplay + "</span><br/>"+ mainTweet.content + "<br/> via <a href='" + mainTweet.user.url + "'>" + mainTweet.user.username + "</a> | " + mainTweet.date_display + " | " + "<a href='/tweet/" + mainTweet.id + "'>View</a> | " + "<a class='retweetBtn' href='/tweet/" + tweetValue.id + "/retweet/'>Retweet</a>" + "</div></div><hr/>"
       } else {
         // fresh tweet
-         tweetFormattedHtml = "<div class=\"media\"><div class=\"media-body\">" + tweetContent + "<br/> via <a href='" + tweetUser.url + "'>" + tweetUser.username + "</a> | " + dateDisplay + " | " + "<a href='/tweet/" + tweetValue.id + "'>View</a> | " + "<a href='/tweet/" + tweetValue.id + "/retweet/'>Retweet</a>" + "</div></div><hr/>"
+         tweetFormattedHtml = "<div class=\"media\"><div class=\"media-body\">" + tweetContent + "<br/> via <a href='" + tweetUser.url + "'>" + tweetUser.username + "</a> | " + dateDisplay + " | " + "<a href='/tweet/" + tweetValue.id + "'>View</a> | " + "<a class='retweetBtn' href='/tweet/" + tweetValue.id + "/retweet/'>Retweet</a>" + "</div></div><hr/>"
       }
       
       if (prepend==true){
@@ -50,6 +77,7 @@ $(document).ready(function(){
         $("#tweet-container").append(tweetFormattedHtml)
      }
   }
+
   function parseTweets(){
     if (tweetList == 0) {
       $("#tweet-container").text("No tweets currently found.")
@@ -66,6 +94,7 @@ $(document).ready(function(){
       })
     }
   }
+
   function fetchTweets(url){
     console.log("fetching..")
     var fecthUrl;
@@ -98,7 +127,10 @@ $(document).ready(function(){
       }
     })
   }
+
   fetchTweets()
+
+
   $("#loadmore").click(function(event){
       event.preventDefault()
       if (nextTweetUrl) {
@@ -109,12 +141,15 @@ $(document).ready(function(){
   
   var charsStart = 140;
   var charsCurrent = 0;
+
   $("#tweet-form").append("<span id='tweetCharsLeft'>" + charsStart + "</span>")
+
   $("#tweet-form textarea").keyup(function(event){
       var tweetValue = $(this).val()
       charsCurrent = charsStart - tweetValue.length
       var spanChars = $("#tweetCharsLeft")
       spanChars.text(charsCurrent)
+
       if (charsCurrent > 0 ) {
          // remove classes
          spanChars.removeClass("grey-color")
@@ -128,7 +163,9 @@ $(document).ready(function(){
           spanChars.removeClass("grey-color")
           spanChars.addClass("red-color")
       }
+
   })
+
   $("#tweet-form").submit(function(event){
       event.preventDefault()
       var this_ = $(this)
@@ -139,7 +176,6 @@ $(document).ready(function(){
           data: formData,
           method: "POST",
           success: function(data){
-            console.log(data)
             this_.find("input[type=text], textarea").val("")
             attachTweet(data, true)
             updateHashLinks()
@@ -154,8 +190,16 @@ $(document).ready(function(){
       }  else {
         console.log("Cannot send, tweet too long.")
     }
+
+
+
       
   })
+
+
+
+
+
 });
 </script>
 {% endblock script %}
